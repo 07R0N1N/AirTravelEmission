@@ -107,6 +107,6 @@ MIT – see [`LICENSE`](LICENSE).
 ---
 
 ## 🙏 Credits
-* Airport data from [openflights.org](https://github.com/jpatokal/openflights) (CC‑BY‑SA).  
+* Airport data from https://ourairports.com/data/.
 * CO₂ emission factors based on DEFRA 2024 guidelines.
 
