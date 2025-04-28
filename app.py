@@ -99,6 +99,33 @@ st.markdown(
     unsafe_allow_html=True
 )
 uploaded_file = st.file_uploader("Upload an Excel file (.xlsx/.xls)", type=["xlsx", "xls"])
+
+# -----------------------------
+# Compact template download buttons (inline)
+# -----------------------------
+with st.container():
+    st.markdown("<h6 style='margin-bottom:4px;'>Download sample templates</h6>", unsafe_allow_html=True)
+    col_t1, col_t2, _ = st.columns([1,1,4])
+
+    # Template A: From–To
+    sample_a = pd.DataFrame({
+        "from": ["AGR", "AMD"],
+        "to":   ["JFK", "JFK"],
+        "trips(optional)": [1000, 50]
+    })
+    buf_a = io.BytesIO(); sample_a.to_excel(buf_a, index=False, engine="openpyxl"); buf_a.seek(0)
+    col_t1.download_button("Single-leg", buf_a, "template_from_to.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    # Template B: Route
+    sample_b = pd.DataFrame({
+        "route": ["TRV-BLR-JFK", "BLR-JFK-TRV-BOM"],
+        "trips(optional)": [1, 1]
+    })
+    buf_b = io.BytesIO(); sample_b.to_excel(buf_b, index=False, engine="openpyxl"); buf_b.seek(0)
+    col_t2.download_button("Multi‑leg", buf_b, "template_route.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file)
@@ -137,7 +164,7 @@ if uploaded_file:
                         all_domestic = False
 
                 travel_type = "Domestic" if all_domestic else "International"
-                emissions_t = total_em_kg / 1000                 # kg → tonnes
+                emissions_t = row.get('trips', 1) * total_em_kg / 1000                 # kg → tonnes
                 return pd.Series([total_km, travel_type, emissions_t])
 
 
