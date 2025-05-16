@@ -131,9 +131,10 @@ if uploaded_file:
         df = pd.read_excel(uploaded_file)
         df.columns = [col.strip().lower() for col in df.columns]
         if 'route' in df.columns:
-    # Ensure 'trips' exists and is integer
-            if 'trips' in df.columns:
-                df['trips'] = df['trips'].fillna(1).astype(int)
+            # Ensure 'trips' exists and is integer
+            trips_col = 'trips(optional)' if 'trips(optional)' in df.columns else 'trips'
+            if trips_col in df.columns:
+                df['trips'] = df[trips_col].fillna(1).astype(int)
             else:
                 df['trips'] = 1
 
@@ -146,7 +147,7 @@ if uploaded_file:
                 codes = [c.strip().upper() for c in row["route"].split("-")]
                 total_km     = 0.0           # accumulate distance
                 total_em_kg  = 0.0           # accumulate emissions in kg
-                all_domestic = True          # flips to False on first int’l leg
+                all_domestic = True          # flips to False on first int'l leg
 
                 for origin, dest in zip(codes, codes[1:]):
                     a1, a2 = airport_data.get(origin), airport_data.get(dest)
@@ -158,7 +159,7 @@ if uploaded_file:
 
                     domestic_leg = (a1["country"] == "IN") and (a2["country"] == "IN")
                     factor       = DOMESTIC_FACTOR if domestic_leg else INTERNATIONAL_FACTOR
-                    total_em_kg += leg_km * factor               # add this leg’s emissions
+                    total_em_kg += leg_km * factor               # add this leg's emissions
 
                     if not domestic_leg:
                         all_domestic = False
@@ -173,7 +174,12 @@ if uploaded_file:
         elif not {'from', 'to'}.issubset(df.columns):
             st.error("Excel must contain 'from' and 'to' columns.")
         else:
-            df['trips'] = df.get('trips', 1).fillna(1).astype(int)
+            # Handle trips column properly - support both 'trips' and 'trips(optional)'
+            trips_col = 'trips(optional)' if 'trips(optional)' in df.columns else 'trips'
+            if trips_col in df.columns:
+                df['trips'] = df[trips_col].fillna(1).astype(int)
+            else:
+                df['trips'] = 1
 
             def compute_metrics(row):
                 f, t = row['from'].strip().upper(), row['to'].strip().upper()
